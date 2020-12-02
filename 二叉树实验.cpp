@@ -10,8 +10,8 @@
 #include<vector>
 #define N 50
 using namespace std;
+int a[N];
 static int num1=0,num2=0,num3=0;//用于计算
-string ss[N];
 //定义树结构
 struct TreeNode {
 	struct TreeNode * LeftNode;
@@ -209,14 +209,15 @@ bool ShowPath(TreeNode*tree,string value)
 	int i=0;
 	while (Node != NULL && Node->data != value)
 	{
-		ss[i]=tree->data;
 		if (value < Node->data)
 		{
 			Node = Node->LeftNode;
+			a[i]=1;
 		}
 		else
 		{
 			Node = Node->RightNode;
+			a[i]=2;
 		}
 		i++;
 	}
@@ -280,6 +281,7 @@ int main()
         }
 		case 7:
         {
+			int j=0;
 			string newData;
 			index=WhichTree();
 			printf("请输入要查找的节点所存储的数据\n");
@@ -287,10 +289,21 @@ int main()
 			scanf("%s",&newData[0]);
 			if(ShowPath(tree[index],newData))//如果查找成功
 			{
-				for(auto ch:ss)
+				printf("以下为路径\n");
+				for(int i=0;a[i]!=0;i++)
 				{
-					cout<<ch;
+					cout<<tree[index]->data<<endl;
+					if(a[i]==1)//如果指向左端
+					{
+
+						tree[index]=tree[index]->LeftNode;
+					}
+					if(a[i]==2)//如果指向右端
+					{
+						tree[index]=tree[index]->RightNode;
+					}
 				}
+				cout<<tree[index]->data<<endl;
 			}
 			else
 			{
