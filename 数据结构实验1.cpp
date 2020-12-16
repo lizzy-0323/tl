@@ -8,24 +8,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+//用于表示浮点数可以接受的最小精度差值
 const double eps = 1e-8;
+//用于读取错误输入
+ char wrong[100];
 #define N 50
+//用于比较浮点数
 #define value(a,b) ((fabs((a) - (b)))<(eps)) 
+//多项式节点的结构体定义
 typedef struct H{
     double coef;
     double expn;
     struct H *next;
 }HLink;
 static int Is0 = 0;
-//用于创建链表
+//用于创建多项式
 void Build(HLink *H)
 {
     int i = 0;
-    char a;
-    //用于读取错误输入
-    char wrong[100];
+    char a='y';
     HLink *p,*pend = NULL; 
-    while(a != '#')
+    while(a != 'n'&&a!='N')
     {
         if((p = (HLink *)malloc(sizeof(HLink))) == NULL) 
         {
@@ -56,7 +59,7 @@ void Build(HLink *H)
             printf("请以正确的格式录入");
         }
         fgets(wrong,N,stdin);
-        printf("是否还要继续输入？（#号结束）");
+        printf("是否还要继续输入？y or n\n");
         a = getchar();  //读取用户输入
         fgets(wrong,N,stdin);
         i++;
@@ -139,6 +142,7 @@ void Output(HLink *H)
     p = p->next;    
     while(p != NULL) 
     {
+        //如果系数大于0
         if(p->coef > 0)  
         {
             printf("+"); 
@@ -203,7 +207,7 @@ void Output(HLink *H)
     }
 }
 //相加函数
-void AddNode(HLink *H,HLink H1,HLink H2)
+void Add(HLink *H,HLink H1,HLink H2)
 {
     HLink *p,*q,*temp,*pend = NULL;
     if(H1.next == NULL && H2.next == NULL)  
@@ -316,6 +320,7 @@ void MultH(HLink *H,HLink H1,HLink H2)
                 pend->next = p;    
                 pend = p;          
             }
+            //相乘操作
             p->expn = r->expn + q->expn;     
             p->coef = (r->coef) * (q->coef);  
             r = r->next;    
@@ -400,7 +405,7 @@ void Check0(HLink *H)
     }
 }
 //清除多项式函数
-void Check(HLink *H)
+void Delete(HLink *H)
 {
     HLink *p,*pend = NULL;
     p = H->next;
@@ -427,36 +432,39 @@ void Menu()
 int main()
 {
     int  button;
-    int j = 0;   
-    double expn;    
+    int j = 0;  
+    //用于次数的比较 
+    double expn;  
     char pend[100];    
     int index[100] = {0};   
     //指针数组
     HLink *pt[100] = {NULL};  
-    HLink *H1,*H2,*q,*r,*e = NULL; 
+//分别用于，加法，乘法，加法临时，乘法临时
+    HLink *H1,*H2,*p3,*p4,*e = NULL; 
     //对指针进行初始化
     H1 = (HLink *)malloc(sizeof(HLink));
     H1->next = NULL;
     H2 = (HLink *)malloc(sizeof(HLink));
     H2->next = NULL;
-    q = (HLink *)malloc(sizeof(HLink));
-    q->next = NULL;
+    p3 = (HLink *)malloc(sizeof(HLink));
+    p3->next = NULL;
     e = (HLink *)malloc(sizeof(HLink));
     e->next = NULL;
     while(1)
     {
         //打印菜单
         Menu();
-        scanf("%d", &button);
+        //检查用户输入是否有误
+        while(scanf("%d", &button)!=1)
+        {
+            printf("输入错误，请重新输入\n");
+            fgets(wrong,N,stdin);
+        }
         switch(button)
         {
         case 1:
             {
                 char a;
-                for(int index = 0;index < j;index++)
-                {
-                    Check(pt[index]); 
-                }
                 j = 0; 
                 //读取用户输入
                 do 
@@ -473,60 +481,62 @@ int main()
                     Swap(pt[j]);         
                     Union(pt[j]);  
                     j++; 
-                    printf("是否还要继续录入？（#号结束)");
+                    printf("是否录入下一个多项式？y or n\n");
                     a = getchar();
                     fgets(pend,N,stdin);
-                } while(a != '#');   //输入#时结束
-                printf("\n");
+                } while(a =='Y'||a=='y'); 
+                //显示已经建立的多项式
                 break;
             }
         case 2:
             {
+                //如果无多项式储存
                 if(j == 0 && H1->next == NULL && H2->next ==NULL)
                 {
-                    printf("没有录入任何数据!\n");
+                    printf("当前无多项式录入\n");
                 }
                 else
                 {
                     for(int k = 0;k < j;k++)
                     {
-                        printf("----当前为第%d个多项式--------\n",k+1);
-                        OutOnenode(pt[k]);
+                        printf("\n----当前为第%d个多项式--------\n",k+1);
+                        OutOnenode(pt[k]);//以节点形式输出
                     }
                     if(H1->next != NULL)
                     {
-                        printf("--------多项式1为--------\n");
+                        printf("--------多项式为--------\n");
                         OutOnenode(H1);
                     }
                     if(H2->next != NULL)
                     {
-                        printf("--------多项式2为--------\n");
+                        printf("--------多项式为--------\n");
                         OutOnenode(H2);
                     }
                 }
                 break;
             }
         case 3:
-            {
+        {
+                //如果无多项式储存                
                 if(j == 0 && H1->next == NULL && H2->next ==NULL)
                 {
-                    printf("没有录入任何数据!\n");
+                    printf("当前无多项式录入\n");
                 }
                 else
                 {
                     for(int k = 0;k < j;k++)
                     {
-                        printf("-----第%d个多项式--------\n",k+1);
+                        printf("\n-----第%d个多项式为--------\n",k+1);
                         Output(pt[k]);
                     }
                     if(H1->next != NULL)
                     {
-                        printf("--------多项式1为--------\n");
+                        printf("--------多项式为--------\n");
                         Output(H1);
                     }
                     if(H2->next != NULL)
                     {
-                        printf("--------多项式2为--------\n");
+                        printf("--------多项式为--------\n");
                         Output(H2);
                     }
                 }
@@ -534,96 +544,106 @@ int main()
             }
         case 4:
             {
+//如果无节点
                 if(j == 0)
                 {
-                    printf("当前无多项式录入！\n");
+                    printf("当前无多项式录入，不启用该功能！\n");
                     break;
                 }
-                printf("当前共有%d个多项式\n",j);
-                int k;
-                for(k = 0;k < j;k++)
+                int k=0;
+                printf("请输入需要相加的多项式序号,输入0结束:\n");
+                do
                 {
-                    printf("第%d个多项式：",k + 1);
-                    Output(pt[k]);
-                    printf("\n");
-                }
-                printf("请输入需要相加的多项式序号,输入0后结束:");
-                k = 0;
-                Check(q);
+                    while(!scanf("%d", &index[k]) || index[k] < 0 || index[k] > j)
+                    {
+                        printf("请正确输入\n");
+                        fgets(wrong,N,stdin);
+                    }
+                    fgets(wrong,N,stdin);
+                    k++;
+                }while(index[k-1] != 0);
+                k=0;
+                Delete(p3);
+                //从第一个数据开始
                 while(index[k] != 0)
                 {
                     if(k % 2 == 0)
                     {
-                        Check(H1);
-                        AddNode(H1,*q,*pt[index[k] - 1]);
+                        Delete(H1);
+                        Add(H1,*p3,*pt[index[k] - 1]);
                         Check0(H1);    
                     }
                     else
                     {
-                        Check(q);
-                        AddNode(q,*H1,*pt[index[k] - 1]);
-                        Check0(q);    
+                        Delete(p3);
+                        Add(p3,*H1,*pt[index[k] - 1]);
+                        Check0(p3);    
                     }
                     k++;
                 }
                 if(k % 2 == 0)
                 {
-                    Check(H1);
-                    H1->next = q->next;
+                    Delete(H1);
+                    H1->next = p3->next;
                 }
                 else
                 {
-                    Check(q);
+                    Delete(p3);
                 }
-                printf("--------相加后的多项式为--------\n");
+                printf("-------相加后的多项式为--------\n");
                 Output(H1);
                 break;
             }
         case 5:
             {
                 int k = 0;
+//如果无节点
                 if(j == 0)
                 {
-                    printf("当前无多项式录入!\n");
+                    printf("当前无多项式录入，不启用该功能!\n");
                     break;
                 }
-                printf("当前共有%d个多项式",j);
-                for(k = 0;k < j;k++)
+                printf("当前共有%d个多项式\n",j);
+                printf("请输入需要相乘的多项式序号，输入0结束\n");
+                k=0;
+                do
                 {
-                    printf("第%d个多项式：",k + 1);
-                    Output(pt[k]);
-                    printf("\n");
-                }
-                printf("请输入需要相乘的多项式序号，(输入0后结束输入):");
-                k = 0;
+                    while(!scanf("%d", &index[k]) || index[k] < 0 || index[k] > j)
+                    {
+                        printf("请正确输入\n");
+                        fgets(wrong,N,stdin);
+                    }
+                    fgets(wrong,N,stdin);
+                    k++;
+                }while(index[k-1] != 0);
                 if(index[0] == 0) 
                 {
                     printf("当前没有选择多项式\n");
                     break;
                 }
-                Check(e);
-                if((r = (HLink *)malloc(sizeof(HLink))) == NULL) 
+                Delete(e);
+                if((p4 = (HLink *)malloc(sizeof(HLink))) == NULL) 
                 {
                     printf("内存分配失败！");
                     exit(0);
                 }
-                r->expn = 0;
-                r->coef = 1;
-                e->next = r;
-                r->next = NULL;
+                p4->expn = 0;
+                p4->coef = 1;
+                e->next = p4;
+                p4->next = NULL;
                 k = 0;
                 while(index[k] != 0)
                 {
                     if(k % 2 == 0)
                     {
-                        Check(H2);
+                        Delete(H2);
                         MultH(H2,*e,*pt[index[k] - 1]);
                         Swap(H2);         
                         Union(H2);        
                     }
                     else
                     {
-                        Check(e);
+                        Delete(e);
                         MultH(e,*H2,*pt[index[k] - 1]);
                         Swap(e);         
                         Union(e);        
@@ -632,12 +652,12 @@ int main()
                 }
                 if(k % 2 == 0)
                 {
-                    Check(H2);
+                    Delete(H2);
                     H2->next = e->next;
                 }
                 else
                 {
-                    Check(e);
+                    Delete(e);
                 }
                 printf("-------相乘后的多项式为--------\n");
                 Output(H2);
